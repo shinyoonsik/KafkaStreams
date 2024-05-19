@@ -1,4 +1,4 @@
-package com.digitaltwin.model;
+package com.digitaltwin.model.Enum;
 
 public enum Power {
     ON, OFF
