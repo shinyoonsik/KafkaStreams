@@ -20,10 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-/**
- * TODO 리스트
- * 1. logging 처리
- */
 
 @Slf4j
 public class ProcessorApp {
