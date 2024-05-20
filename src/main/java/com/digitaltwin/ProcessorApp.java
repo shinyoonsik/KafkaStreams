@@ -6,6 +6,7 @@ import com.digitaltwin.processors.DigitalTwinProcessor;
 import com.digitaltwin.processors.HighWindsAlertProcessor;
 import com.digitaltwin.serdes.DigitalTwinSerdes;
 import com.digitaltwin.serdes.TurbineStateSerdes;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
@@ -14,6 +15,8 @@ import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
@@ -21,9 +24,13 @@ import java.util.Properties;
  * TODO 리스트
  * 1. logging 처리
  */
-public class ProcessorApp {
-    public static void main(String[] args) {
 
+@Slf4j
+public class ProcessorApp {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorApp.class);
+
+    public static void main(String[] args) {
         Topology topology = getTopology();
 
         Properties props = new Properties();
