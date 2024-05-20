@@ -1,16 +1,18 @@
-# KafkaStreams
+## 프로젝트 
+- 풍력 측정도구에 대한 디지털 트윈 서비스 구축 프로젝트
 
-- 프로젝트
-  - 풍력 측정도구에 대한 디지털 트윈 서비스 구축 프로젝트
-- 흐름
-    1. 풍력 측정도구에서 발생한 데이터 -> "reported-state-events"토픽에 저장
-    2. "reported-state-events"토픽에서 지속적으로 데이터를 모니터링하는 HighWindsAlertProcessor를 통해 바람 상태가 위험하면 위험신호를 "dangerous-wind-detected"로 전송
-    3. 바람 상태가 정상인 경우, HighWindsAlertProcessor에서 DigitalTwinProcessor로 데이터를 전달
-    4. DigitalTwinProcessor에서 추가적인 처리후, digital-twins로 데이터를 전송
-       - "desired-state-events"토픽에 직접 생성한 신호와 풍력 측정 도루에서 수집한 데이터를 합치는 작업을 수행하는 프로세서
-         - 이 프로세서에서 kvStore(rocksDB)를 사용해 데이터를 합치는 처리를 수행함
-         - punctuator(scheduler)를 활용해 kvStore에 저장된 데이터중에서 7일 이상지난 데이터를 삭제
-- 실행 방 
+## 아키텍처
+  - ![Processor Diagram](image/processor.png)
+## flow
+1. **풍력 측정도구에서 발생한 데이터** -> `reported-state-events` 토픽에 저장
+2. **HighWindsAlertProcessor**에서 `reported-state-events` 토픽을 지속적으로 모니터링하여 바람 상태가 위험하면 위험신호를 `dangerous-wind-detected`로 전송
+3. **HighWindsAlertProcessor**에서 바람 상태가 정상인 경우 데이터를 **DigitalTwinProcessor**로 전달
+4. **DigitalTwinProcessor**에서 추가적인 처리 후 `digital-twins`로 데이터를 전송
+   - `desired-state-events` 토픽에 직접 생성한 신호와 풍력 측정 도구에서 수집한 데이터를 합치는 작업을 수행하는 프로세서
+   - 이 프로세서에서 kvStore(rocksDB)를 사용해 데이터를 합치는 처리를 수행함
+   - punctuator(scheduler)를 활용해 kvStore에 저장된 데이터 중에서 7일 이상 지난 데이터를 삭제
+
+## 실행 방법 
   - docker-compose로 kafka 클러스터 실행
     ```sh
     cd /docker

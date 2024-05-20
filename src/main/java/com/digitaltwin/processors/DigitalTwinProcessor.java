@@ -35,7 +35,7 @@ public class DigitalTwinProcessor implements Processor<String, TurbineState, Str
 
         // WALL_CLOCK_TIME기준으로 매 5분마다 주기적으로 enforceTtl()를 실행
         this.punctuator = this.context.schedule(
-                Duration.ofMinutes(1),
+                Duration.ofMinutes(5),
                 PunctuationType.WALL_CLOCK_TIME,
                 this::enforceTtl
         );
