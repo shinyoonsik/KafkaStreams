@@ -2,7 +2,7 @@
 - 풍력 측정도구에 대한 디지털 트윈 서비스 구축 프로젝트
 
 ## 아키텍처
-  - ![Processor Diagram](image/processor.png)
+  - ![Processor Diagram](image/processor_v2.png)
 ## flow
 1. **풍력 측정도구에서 발생한 데이터** -> `reported-state-events` 토픽에 저장
 2. **HighWindsAlertProcessor**에서 `reported-state-events` 토픽을 지속적으로 모니터링하여 바람 상태가 위험하면 위험신호를 `dangerous-wind-detected`로 전송

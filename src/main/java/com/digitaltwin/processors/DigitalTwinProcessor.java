@@ -60,6 +60,9 @@ public class DigitalTwinProcessor implements Processor<String, TurbineState, Str
 
         this.kvStore.put(key, digitalTwin);
 
+        // 모두 setting된 digitalTwin만 producing
+        if(digitalTwin.getDesired() == null || digitalTwin.getReported() == null) return;
+
         Record<String, DigitalTwin> newRecord = new Record<>(record.key(), digitalTwin, record.timestamp());
         this.context.forward(newRecord);
      }
