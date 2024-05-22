@@ -1,4 +1,4 @@
-package com.crypto;
+package com.tweet;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KafkaStreams;
@@ -19,7 +19,7 @@ public class Main {
 
         KafkaStreams kafkaStreams = new KafkaStreams(topology, config);
 
-        // 프로세스 중단 시그널 -> 카프카 스트림즈 graceful shutdown(서비스를 안전하고 질서있게 종류하는 것을 말함)
+        // 프로세스 중단 시그널 -> 카프카 스트림즈 graceful shutdown(서비스를 안전하고 질서있게 종류하는 것을 말함!)
         Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
 
         log.info("Start Twitter Streams");

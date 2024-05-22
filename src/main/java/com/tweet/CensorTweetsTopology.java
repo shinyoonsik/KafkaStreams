@@ -1,7 +1,7 @@
-package com.crypto;
+package com.tweet;
 
-import com.crypto.model.Tweet;
-import com.crypto.serdes.TweetSerdes;
+import com.tweet.model.Tweet;
+import com.tweet.serdes.TweetSerdes;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;

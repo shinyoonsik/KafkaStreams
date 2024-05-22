@@ -1,6 +1,6 @@
-package com.crypto.serdes.deserialization;
+package com.tweet.serdes.deserialization;
 
-import com.crypto.model.Tweet;
+import com.tweet.model.Tweet;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

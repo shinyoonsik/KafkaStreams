@@ -1,4 +1,4 @@
-package com.crypto.model;
+package com.tweet.model;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
