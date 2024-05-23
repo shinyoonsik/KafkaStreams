@@ -18,4 +18,5 @@
 ## Test-data
 - com.tweet.data 하위의 test.json 사용
 
-## tweets 토픽으로 들어오는 데이터는 kafka connector사용
+## source
+- tweets 토픽으로 들어오는 데이터는 kafka connector사용
