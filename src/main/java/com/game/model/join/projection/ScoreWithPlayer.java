@@ -1,13 +1,11 @@
-package com.game.model.join;
+package com.game.model.join.projection;
 
 import com.game.model.Player;
 import com.game.model.ScoreEvent;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
-@ToString
-@Getter
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class ScoreWithPlayer {
     private ScoreEvent scoreEvent;

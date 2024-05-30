@@ -1,68 +1,54 @@
 ## 프로젝트 
-- 풍력 측정도구에 대한 디지털 트윈 서비스 구축 프로젝트
+- 게임별 가장 높은 점수를 받은 3명의 user를 출력하는 스트림 프로젝트
 
 ## 아키텍처
-  - ![Processor Diagram](image/processor.png)
+  - ![Processor Diagram](image/game-board_v2.png)
 ## flow
-1. **풍력 측정도구에서 발생한 데이터** -> `reported-state-events` 토픽에 저장
-2. **HighWindsAlertProcessor**에서 `reported-state-events` 토픽을 지속적으로 모니터링하여 바람 상태가 위험하면 위험신호를 `dangerous-wind-detected`로 전송
-3. **HighWindsAlertProcessor**에서 바람 상태가 정상인 경우 데이터를 **DigitalTwinProcessor**로 전달
-4. **DigitalTwinProcessor**에서 추가적인 처리 후 `digital-twins`로 데이터를 전송
-   - `desired-state-events` 토픽에 직접 생성한 신호와 풍력 측정 도구에서 수집한 데이터를 합치는 작업을 수행하는 프로세서
-   - 이 프로세서에서 kvStore(rocksDB)를 사용해 데이터를 합치는 처리를 수행함
-   - punctuator(scheduler)를 활용해 kvStore에 저장된 데이터 중에서 7일 이상 지난 데이터를 삭제
+1. **score-events토픽, players토픽, products토픽으로부터 이벤트 컨슈밍**
+2. **score-events토픽으로부터 가져온 이벤트와 players토픽으로부터 가져온 이벤트를 join**
+3. **withPlayer스트림으로부터 가져온 이벤트와 products토픽으로부터 가져온 이벤트를 join**
+4. **최종 조인된 결과 스트림으로부터 product_id를 기준으로 그룹핑**
+5. **그룹핑한 결과 스트림으로부터 집계연산을 수행** -> local state store에 결과 저장
+6. **집계 연산 수행후, 결과 레코드를 high-scores토픽으로 전송**
+7. **모니터링을 위해 local state store로 api요청 가능**
+   - 최종 결과 조회(high-scores토픽에 담긴 정보) [curl -s localhost:7000/game-board | jq '.'](http://)
+   - 저장된 user정보 조회: [curl -s localhost:7000/players | jq '.'](http://)
 
 ## 실행 방법 
+  - kafka-ui
+    - http://localhost:8989/ui/clusters/local/all-topics?perPage=25
   - docker-compose로 kafka 클러스터 실행
     ```sh
     cd /docker
     docker-compose up -d
     ```
-  - kafka 모니터링
-    - 참조) https://github.com/provectus/kafka-ui
-    - http://localhost:8989
-  - 생성해야 하는 Topic 정보
-    ```sh
-    // reported-state-events토픽 생성
-    docker-compose exec kafka-1 bash -c "
-    /bin/kafka-topics --bootstrap-server localhost:9092 \
-    --topic reported-state-events \
-    --replication-factor 1 \
-    --partitions 4 \
-    --create"
-    
-    // desired-state-events토픽 생성 
-    docker-compose exec kafka-1 bash -c "
-    /bin/kafka-topics --bootstrap-server localhost:9092 \
-    --topic reported-state-events \
-    --replication-factor 1 \
-    --partitions 4 \
-    --create"
-    
-    // digital-twins토픽 생성
-    docker-compose exec kafka-1 bash -c "
-    /bin/kafka-topics --bootstrap-server localhost:9092 \
-    --topic digital-twins \
-    --replication-factor 1 \
-    --partitions 4 \
-    --create"
+  - kafka0 컨테이너 접속후, ./docker/data 넣어서 테스트 수행
+      1. 컨테이너 내부로 접속
+      2. high-scores, players, products, score-events토픽 생성 화인 with partition 3
+      3. players토픽에 이벤트 발행
+      4. products토픽에 이벤트 발행
+      5. score-events토픽에 이벤트 발행
+      ```sh
+      docker exec -it kafka0 /bin/bash
 
-    // dangerous-wind-detected토픽 생성
-    docker-compose exec kafka-1 bash -c "
-    /bin/kafka-topics --bootstrap-server localhost:9092 \
-    --topic dangerous-wind-detected \
-    --replication-factor 1 \
-    --partitions 4 \
-    --create"    
-
+      kafka-topics --bootstrap-server kafka0:29092 --list
     
-   - desired-state-events토픽에 생성한 record(key|value)
-     - 1|{"timestamp": "2020-11-23T09:12:00.000Z", "power": "ON", "type": "DESIRED"}
+      echo "3|{\"id\": 3, \"name\": \"kyuhoon\"}" | kafka-console-producer --broker-list kafka0:29092 --topic players --property "parse.key=true" --property "key.separator=|"
+      echo "1|{\"id\": 1, \"name\": \"yoonsik\"}" | kafka-console-producer --broker-list kafka0:29092 --topic players --property "parse.key=true" --property "key.separator=|"
+      echo "2|{\"id\": 2, \"name\": \"minjeong\"}" | kafka-console-producer --broker-list kafka0:29092 --topic players --property "parse.key=true" --property "key.separator=|"
+      echo "4|{\"id\": 4, \"name\": \"seungjoo\"}" | kafka-console-producer --broker-list kafka0:29092 --topic players --property "parse.key=true" --property "key.separator=|"
+ 
+      echo "1|{\"id\": 1, \"name\": \"BattleGround\"}" | kafka-console-producer --broker-list kafka0:29092 --topic products --property "parse.key=true" --property "key.separator=|"
+      echo "6|{\"id\": 6, \"name\": \"Overwatch\"}" | kafka-console-producer --broker-list kafka0:29092 --topic products --property "parse.key=true" --property "key.separator=|"
 
-   - reported-state-event토픽에 생성한 record(key|value)
-     - 1|{"timestamp": "2020-11-23T09:02:00.000Z", "wind_speed_mph": 40, "power": "ON", "type": "REPORTED"}
-     - 1|{"timestamp": "2020-11-23T09:02:00.500Z", "wind_speed_mph": 42, "power": "ON", "type": "REPORTED"}
-     - 1|{"timestamp": "2020-11-23T09:02:01.000Z", "wind_speed_mph": 44, "power": "ON", "type": "REPORTED"}
-     - 1|{"timestamp": "2020-11-23T09:02:01.000Z", "wind_speed_mph": 68, "power": "ON", "type": "REPORTED"}
+      kafka-console-producer --broker-list kafka0:29092 --topic score-events
+      {"score": 1000, "product_id": 1, "player_id": 1}
+      {"score": 2000, "product_id": 1, "player_id": 2}
+      {"score": 4000, "product_id": 1, "player_id": 3}
+      {"score": 500, "product_id": 1, "player_id": 4}
+      {"score": 800, "product_id": 6, "player_id": 1}
+      {"score": 2500, "product_id": 6, "player_id": 2}
+      {"score": 9000.0, "product_id": 6, "player_id": 3}
+      {"score": 1200.0, "product_id": 6, "player_id": 4}
 
   
